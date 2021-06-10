@@ -20,8 +20,6 @@ public class GuestureRecognizer : MonoBehaviour
     public int[] hiddenLayers = new int[2] { 16, 16 };
     [Tooltip("Set amount of outputs and their event handlers.")]
     public UnityEvent[] outputEvents = new UnityEvent[2];
-    [Tooltip("Set how many times the network will learn per given guesture. (* the amount of outputs)")]
-    public int learnIterations = 10;
     [Tooltip("Set the minimum output value the network needs to Invoke an output event")]
     [Range(0,1)]
     public float minValue = 0.75f;
@@ -31,14 +29,16 @@ public class GuestureRecognizer : MonoBehaviour
     [Tooltip("Set point trackers for the network to learn and track")]
     public PointTracker[] pointTrackers;
     [Tooltip("Use a preset network data file")]
-    public bool usePresetData;
+    public Object usePresetData;
 
-    private float[][] inputs;
-    private float[][] outputs;
+    List<List<float>> inputs = new List<List<float>>();
+    List<List<float>> outputs = new List<List<float>>();
+
     private int inputLenght;
     private int vectorBreakdownAmount = 3;
 
     BackpropagationNetwork backprop;
+
 
     private void Awake() {
         #region Singleton
@@ -50,14 +50,13 @@ public class GuestureRecognizer : MonoBehaviour
         }
         #endregion
 
-        SetInputsAndOutputs();
+        inputLenght = (iterationsPerSecond * secondsOfRecord) * vectorBreakdownAmount;
         if (checkLine != null) { 
             checkLine.InstantiateLines(outputEvents.Length);
         }
 
-        if(usePresetData) {
-            SaveNetworkData.Load();
-            backprop = new BackpropagationNetwork(SaveNetworkData.loadedData, networkName);
+        if(usePresetData != null) {
+            backprop = new BackpropagationNetwork(SaveNetworkData.Load(usePresetData), networkName);
         } else {
             backprop = new BackpropagationNetwork(GetStructure(), networkName);
         }
@@ -71,26 +70,6 @@ public class GuestureRecognizer : MonoBehaviour
         }
         structure.Add(outputEvents.Length);
         return structure;
-    }
-
-    private void SetInputsAndOutputs() {
-        inputLenght = (iterationsPerSecond * secondsOfRecord)*vectorBreakdownAmount;
-
-        inputs = new float[outputEvents.Length][];
-        outputs = new float[outputEvents.Length][];
-
-        for (int i = 0; i < inputs.Length; i++) {
-            inputs[i] = new float[inputLenght*pointTrackers.Length];
-        }
-
-        int setIndex = 0;
-        for (int i = 0; i < outputs.Length; i++) {
-            outputs[i] = new float[outputEvents.Length];
-            for (int j = 0; j < outputs[i].Length; j++) {
-                outputs[i][j] = (j == setIndex) ? 1 : 0;
-            }
-            setIndex++;
-        }
     }
 
     public void StartTeach(int index) {
@@ -144,59 +123,48 @@ public class GuestureRecognizer : MonoBehaviour
         int maxIndex = output.ToList().IndexOf(maxValue);
 
         if(maxValue >= minValue) {
-            Debug.Log(maxIndex);
             outputEvents[maxIndex].Invoke();
             if (checkLine != null) {
                 checkLine.ShowLine(maxIndex, Color.red);
-                Debug.Log("line should show up");
             }
         }
     }
 
     private void Teach(Vector3[] points, int index) {
-        bool test = false;
-        for (int i = 0; i < inputs[index].Length; i++) {
-            if (inputs[index][i] != 0) {
-                test = true;
-            }
+        inputs.Add(new List<float>());
+        outputs.Add(new List<float>());
+
+        int last = inputs.Count - 1;
+        for (int i = 0; i < points.Length; i++) {
+            inputs[last].Add(Mathf.Abs(points[i].x));
+            inputs[last].Add(Mathf.Abs(points[i].y));
+            inputs[last].Add(Mathf.Abs(points[i].z));
         }
 
-        if (test) {
-            for (int j = 0; j < inputLenght; j += vectorBreakdownAmount) {
-                inputs[index][j] = Mathf.Lerp(inputs[index][j], points[j / vectorBreakdownAmount].x, 0.5f);
-                inputs[index][j + 1] = Mathf.Lerp(inputs[index][j + 1], points[j / vectorBreakdownAmount].y, 0.5f);
-                inputs[index][j + 2] = Mathf.Lerp(inputs[index][j + 2], points[j / vectorBreakdownAmount].z, 0.5f);
-            }
-        }
-        else {
-            for (int j = 0; j < inputLenght; j += vectorBreakdownAmount) {
-                inputs[index][j] = points[j / vectorBreakdownAmount].x;
-                inputs[index][j + 1] = points[j / vectorBreakdownAmount].y;
-                inputs[index][j + 2] = points[j / vectorBreakdownAmount].z;
-            }
+        last = outputs.Count - 1;
+        for (int i = 0; i < outputEvents.Length; i++) {
+            outputs[last].Add(index == i?1:0);
         }
 
         if (checkLine != null) {
             checkLine.ShowLine(index, Color.blue);
         }
-        Learn(learnIterations);
+
+        SaveNetworkData.Save(backprop.SetData(), networkName);
     }
 
-    private void Learn(int iterations = 10) {
-        int setIterations = iterations * outputEvents.Length;
-        float[][] trainingValues = new float[setIterations][];
-        float[][] desiredValues = new float[setIterations][];
+    private void Update() {
+        Learn();
+    }
 
-        for (int i = 0; i < setIterations; i++) {
-            trainingValues[i] = new float[inputLenght];
-            desiredValues[i] = new float[outputEvents.Length];
+    private void Learn() {
+        float[][] trainingValues = new float[inputs.Count][];
+        float[][] desiredValues = new float[outputs.Count][];
 
-            int index = Mathf.FloorToInt((float)i / iterations);
-            //int index = Mathf.RoundToInt(Random.Range(0, amountOfOutputs));
-            trainingValues[i] = inputs[index];
-            desiredValues[i] = outputs[index];
+        for (int i = 0; i < inputs.Count; i++) {
+            trainingValues[i] = inputs[i].ToArray();
+            desiredValues[i] = outputs[i].ToArray();
         }
-
         backprop.Train(trainingValues, desiredValues);
     }
 }

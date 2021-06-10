@@ -52,7 +52,7 @@ public class NeuralNetworkData
 
 public static class SaveNetworkData
 {
-    public static NeuralNetworkData loadedData = null;
+    //public static NeuralNetworkData loadedData = null;
     public static void Save(NeuralNetworkData data, string name) {
         BinaryFormatter bf = new BinaryFormatter();
         Debug.Log(Application.dataPath + "/Assets/" + name.Replace(" ", "_") + ".sav");
@@ -62,14 +62,17 @@ public static class SaveNetworkData
         Debug.Log("Saved Game: " + name.Replace(" ", "_"));
     }
 
-    public static void Load() {
+    public static NeuralNetworkData Load(Object assetData) {
         BinaryFormatter bf = new BinaryFormatter();
-        string path = EditorUtility.OpenFilePanel("Load network data", Application.streamingAssetsPath, "sav");
+        //string path = EditorUtility.OpenFilePanel("Load network data", Application.streamingAssetsPath, "sav");
+        string path = AssetDatabase.GetAssetPath(assetData);
         if (path.Length != 0) {
             FileStream file = File.Open(path, FileMode.Open);
-            loadedData = (NeuralNetworkData)bf.Deserialize(file);
+            NeuralNetworkData loadedData = (NeuralNetworkData)bf.Deserialize(file);
             file.Close();
             Debug.Log("Loaded Game: " + path);
+            return loadedData;
         }
+        return null;
     }
 }

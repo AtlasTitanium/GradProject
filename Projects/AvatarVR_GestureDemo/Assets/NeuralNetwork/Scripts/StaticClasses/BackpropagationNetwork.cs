@@ -51,7 +51,7 @@ public class BackpropagationNetwork
                 desiredNeurons[i][j] = neurons[i][j];
             }
         }
-
+        
         return neurons[neurons.Length - 1];         //returns ONLY the output neurons in an array
     }
 
@@ -71,8 +71,8 @@ public class BackpropagationNetwork
                         var weightSmudge = neurons[j - 1][l] * biasSmudge;
                         weightsSmudge[j - 1][k][l] += weightSmudge;     //calculate the weight cost, and add it to the weightSmudge
 
-                        var valueSmudge = weights[j - 1][k][l] * biasSmudge;
-                        desiredNeurons[j - 1][l] += valueSmudge;        //calculate the neuron cost, and add it to the desired neurons
+                        var neuronSmudge = weights[j - 1][k][l] * biasSmudge;
+                        desiredNeurons[j - 1][l] += neuronSmudge;        //calculate the neuron cost, and add it to the desired neurons
                     }
                 }
             }
@@ -93,18 +93,16 @@ public class BackpropagationNetwork
                 desiredNeurons[i][j] = 0;
             }
         }
-
-        SetData();
-        SaveNetworkData.Save(data, dataName);
     }
 
-    private void SetData() {
+    public NeuralNetworkData SetData() {
         data.neurons = neurons;
         data.desiredNeurons = desiredNeurons;
         data.biases = biases;
         data.biasesSmudge = biasesSmudge;
         data.weights = weights;
         data.weightsSmudge = weightsSmudge;
+        return data;
     }
 }
 
