@@ -1,0 +1,16 @@
+{
+  "source": "Unity",
+  "applications": [
+    {
+      "app_key": "application.generated.unity.avatarvr_gesturedemo.exe",
+      "launch_type": "url",
+      "url": "steam://launch/",
+      "action_manifest_path": "D:\\Files\\GameProjects\\Git\\GradProject\\Projects\\AvatarVR_GestureDemo\\Assets\\StreamingAssets\\SteamVR\\actions.json",
+      "strings": {
+        "en_us": {
+          "name": "AvatarVR_GestureDemo [Testing]"
+        }
+      }
+    }
+  ]
+}
