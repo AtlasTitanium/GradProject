@@ -1,5 +1,0 @@
-sceneSetups:
-- path: Assets/AvatarGame/Scenes/AvatarArena.unity
-  isLoaded: 1
-  isActive: 1
-  isSubScene: 0
