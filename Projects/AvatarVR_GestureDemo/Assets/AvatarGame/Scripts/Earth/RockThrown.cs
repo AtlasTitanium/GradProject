@@ -22,5 +22,12 @@ public class RockThrown : MonoBehaviour
 
         rb.AddForce(hand.forward * 5, ForceMode.Impulse);
         rb.useGravity = true;
+        StartCoroutine(StopRock());
+    }
+
+    IEnumerator StopRock() {
+        yield return new WaitForSeconds(1);
+        rb.isKinematic = true;
+        rb.useGravity = false;
     }
 }

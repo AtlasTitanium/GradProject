@@ -23,6 +23,8 @@ public class GuestureRecognizer : MonoBehaviour
     [Tooltip("Set the minimum output value the network needs to Invoke an output event")]
     [Range(0,1)]
     public float minValue = 0.75f;
+    [Tooltip("Set the amount of times the network learns a new input (above 60 reccomended)")]
+    public int learnIterations = 60;
 
     [Tooltip("Set CheckLine to show input and output lines.\n(can leave empty)")]
     public CheckLine checkLine;
@@ -31,6 +33,9 @@ public class GuestureRecognizer : MonoBehaviour
     [Tooltip("Use a preset network data file")]
     public Object usePresetData;
 
+    [HideInInspector]
+    public UnityEvent learnDone;
+
     List<List<float>> inputs = new List<List<float>>();
     List<List<float>> outputs = new List<List<float>>();
 
@@ -38,7 +43,7 @@ public class GuestureRecognizer : MonoBehaviour
     private int vectorBreakdownAmount = 3;
 
     BackpropagationNetwork backprop;
-
+    
 
     private void Awake() {
         #region Singleton
@@ -150,10 +155,6 @@ public class GuestureRecognizer : MonoBehaviour
             checkLine.ShowLine(index, Color.blue);
         }
 
-        SaveNetworkData.Save(backprop.SetData(), networkName);
-    }
-
-    private void Update() {
         Learn();
     }
 
@@ -165,6 +166,12 @@ public class GuestureRecognizer : MonoBehaviour
             trainingValues[i] = inputs[i].ToArray();
             desiredValues[i] = outputs[i].ToArray();
         }
-        backprop.Train(trainingValues, desiredValues);
+
+        for (int i = 0; i < learnIterations; i++) {
+            backprop.Train(trainingValues, desiredValues);
+        }
+
+        SaveNetworkData.Save(backprop.SetData(), networkName);
+        learnDone.Invoke();
     }
 }
