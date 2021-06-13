@@ -1,8 +1,9 @@
 HELLO! Thank you for downloading this VR Guesture Recognition package! (Version 0.1)
 
-This package includes 2 scenes:
-A GuestureTrackerTest scene, which holds everything for you to start using the package with SteamVR.
-And A MouseGuestureTest scene, which allows you to test the guesture system in 2D using your mouse.
+This package includes 3 scenes:
+An empty scene, including a simple gesture recognizer setup.
+A Magic Demo, where i'll try to lead you through a magic gesture system setup
+and a Workout demo, where you can do some simple workout gestures.
 
 The package also includes 2 prefabs:
 A ready made SteamVR_Rig, which is ready to use for steamvr, and
@@ -45,7 +46,7 @@ Last but not least, is to press the 3rd input, and doing 1 of the 2 movents you 
 
 AND THAT'S IT FOR NOW!
 of course, the system is hard to understand at the moment, but anything requires practice in life.
-I'll also try to make a tutorial video about how to use the system in the future, so you'll have a more visual explanation which'll hopefully help in using it yourself.
+You can find a more clear and in depth intro and tutorial on my WEBSITE: https://www.pepijn-kok.nl/graduation-project/
 For now, I want to thank you for trying out my unity package, and i wish you good luck trying to figure it out!
 
 
